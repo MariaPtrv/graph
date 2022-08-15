@@ -7,13 +7,17 @@
         <td v-for="(pos, posIndex) in row.cells" :key="posIndex">
           <div :class="{'node-holder': pos.isNode}" :style="cssColor()" v-if="pos.isNode">
             <div class="left-top-corner hidden"></div>
-            <div class="top" :class="{hidden: pos.IncomingTop  !== true}"><img src="../assets/arrow.svg" alt="arrow" class="arrow"></div>
+            <div class="top" :class="{hidden: pos.IncomingTop  !== true}"><img src="../assets/arrow.svg" alt="arrow"
+                                                                               class="arrow"></div>
             <div class="right-top-corner hidden"></div>
-            <div class="left" :class="{hidden: pos.OutgoingLeft !==true}"><img src="../assets/line.svg" alt="arrow" class="line"></div>
+            <div class="left" :class="{hidden: pos.OutgoingLeft !==true}"><img src="../assets/line.svg" alt="arrow"
+                                                                               class="line"></div>
             <div class="node"></div>
-            <div class="right" :class="{hidden: pos.OutgoingRight !== true}"><img src="../assets/line.svg" alt="arrow" class="line"></div>
+            <div class="right" :class="{hidden: pos.OutgoingRight !== true}"><img src="../assets/line.svg" alt="arrow"
+                                                                                  class="line"></div>
             <div class="left-bottom-corner"></div>
-            <div class="bottom" :class="{hidden: pos.IncomingBottom  !== true}"><img src="../assets/arrow.svg" alt="arrow" class="arrow"></div>
+            <div class="bottom" :class="{hidden: pos.IncomingBottom  !== true}"><img src="../assets/arrow.svg"
+                                                                                     alt="arrow" class="arrow"></div>
             <div class="right-bottom-corner"></div>
           </div>
 
@@ -91,7 +95,7 @@ const connectNodes = (x, y, isForwardCorner) => {
     }
 
     rows[x].cells[x].IncomingTop = true;
-    rows[y].cells[y].OutgoingRight= true;
+    rows[y].cells[y].OutgoingRight = true;
   } else {
     for (let i = x + 1; i < y; i++) {
       rows[i].cells[x].isVerticalLine = true;
@@ -124,8 +128,9 @@ dark blue #4981fd
 
 */
 table {
-  box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
 }
+
 table, th {
   border: 0.5px solid lightgrey;
   border-collapse: collapse;
@@ -138,13 +143,13 @@ th {
   transition: ease-in-out 0.3s;
 }
 
-tr:hover th{
-  background: rgba(0,0,0,0.1);
+tr:hover th {
+  background: rgba(0, 0, 0, 0.1);
   transition: ease-in-out 0.3s;
 }
 
 tr:hover {
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
   transition: ease-in-out 0.3s;
 }
 
@@ -158,7 +163,10 @@ tr {
 }
 
 
-.row-positions { flex: 1}
+.row-positions {
+  flex: 1
+}
+
 .node-holder {
   display: grid;
   width: 100%;
@@ -195,9 +203,11 @@ tr {
 .top {
   grid-area: top;
 }
+
 .arrow {
   height: 100%;
 }
+
 .top .arrow {
   transform: rotate(180deg);
 }
