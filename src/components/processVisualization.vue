@@ -5,7 +5,6 @@
       <tr v-for="(row, serialIndex) in rows" :key="serialIndex">
         <th>{{ row.title }}</th>
         <td v-for="(pos, posIndex) in row.cells" :key="posIndex">
-
           <div :class="{'node-holder': pos.isNode}" :style="cssColor()" v-if="pos.isNode">
             <div class="left-top-corner hidden"></div>
             <div class="top" :class="{hidden: pos.IncomingTop  !== true}"><img src="../assets/arrow.svg" alt="arrow" class="arrow"></div>
@@ -124,28 +123,42 @@ grey #e1e2e5
 dark blue #4981fd
 
 */
+table {
+  box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+}
 table, th {
   border: 0.5px solid lightgrey;
   border-collapse: collapse;
-
 }
 
 th {
-  padding: 0.2rem;
+  padding: 0.5rem;
   background: #F2F2F2;
-  color: grey;
+  color: rgba(29, 29, 29, 0.99);
+  transition: ease-in-out 0.3s;
+}
+
+tr:hover th{
+  background: rgba(0,0,0,0.1);
+  transition: ease-in-out 0.3s;
+}
+
+tr:hover {
+  background: rgba(0,0,0,0.1);
+  transition: ease-in-out 0.3s;
 }
 
 td {
   height: 5rem;
   width: 5rem;
-
 }
 
 tr {
-  opacity: 0.8;
+  transition: ease-in-out 0.3s;
 }
 
+
+.row-positions { flex: 1}
 .node-holder {
   display: grid;
   width: 100%;
@@ -247,47 +260,47 @@ tr {
 }
 
 .corner .left-top {
-  border-bottom: 1px black solid;
+  border-bottom: 1px grey solid;
 }
 
 .corner .left-bottom {
-  border-top: 1px black solid;
-  border-right: 1px black solid;
+  border-top: 1px grey solid;
+  border-right: 1px grey solid;
 }
 
 .corner .right-bottom {
-  border-left: 1px black solid;
+  border-left: 1px grey solid;
 }
 
 
 .revert-corner .left-top {
-  border-right: 1px black solid;
+  border-right: 1px grey solid;
 }
 
 .revert-corner .right-top {
-  border-bottom: 1px black solid;
-  border-left: 1px black solid;
+  border-bottom: 1px grey solid;
+  border-left: 1px grey solid;
 }
 
 .revert-corner .right-bottom {
-  border-top: 1px black solid;
+  border-top: 1px grey solid;
 }
 
 
 .horizontal-line .left-bottom, .horizontal-line .right-bottom {
-  border-top: 1px black solid;
+  border-top: 1px grey solid;
 }
 
 .horizontal-line .right-top, .horizontal-line .left-top {
-  border-bottom: 1px black solid;
+  border-bottom: 1px grey solid;
 }
 
 .vertical-line .right-bottom, .vertical-line .right-top {
-  border-left: 1px black solid;
+  border-left: 1px grey solid;
 }
 
 .vertical-line .left-top, .vertical-line .left-bottom {
-  border-right: 1px black solid;
+  border-right: 1px grey solid;
 }
 
 .hidden {
