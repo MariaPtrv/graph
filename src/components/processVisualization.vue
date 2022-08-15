@@ -5,61 +5,28 @@
       <tr v-for="(row, serialIndex) in rows" :key="serialIndex">
         <th>{{ row.title }}</th>
         <td v-for="(pos, posIndex) in row.cells" :key="posIndex">
-          <div :style="cssColor()" v-if="pos.isNode">
-            <div :class="{node: pos.isNode}">
-              <div class="right-top-corner"></div>
-              <div class="top"><img src="../assets/arrow.svg" alt="arrow" class="arrow" :class="{hidden: pos.IncomingTop}"></div>
-              <div class="left-top-corner"></div>
-              <div class="left"></div>
-              <div class="node"></div>
-              <div class="right"></div>
-              <div class="left-bottom-corner"></div>
-              <div class="bottom"><img src="../assets/arrow.svg" alt="arrow" class="arrow arrow-bottom" :class="{hidden: pos.IncomingTop}"></div>
-              <div class="right-bottom-corner"></div>
-            </div>
+
+          <div :class="{'node-holder': pos.isNode}" :style="cssColor()" v-if="pos.isNode">
+            <div class="left-top-corner hidden"></div>
+            <div class="top" :class="{hidden: pos.IncomingTop  !== true}"><img src="../assets/arrow.svg" alt="arrow" class="arrow"></div>
+            <div class="right-top-corner hidden"></div>
+            <div class="left" :class="{hidden: pos.OutgoingLeft !==true}"><img src="../assets/line.svg" alt="arrow" class="line"></div>
+            <div class="node"></div>
+            <div class="right" :class="{hidden: pos.OutgoingRight !== true}"><img src="../assets/line.svg" alt="arrow" class="line"></div>
+            <div class="left-bottom-corner"></div>
+            <div class="bottom" :class="{hidden: pos.IncomingBottom  !== true}"><img src="../assets/arrow.svg" alt="arrow" class="arrow"></div>
+            <div class="right-bottom-corner"></div>
           </div>
 
-          <div v-else class="arc-holder">
+          <div v-else class="arc-holder" :class="{'corner': pos.isForwardCorner && pos.isCorner,
+          'revert-corner': !pos.isForwardCorner && pos.isCorner,
+          'horizontal-line': pos.isHorizontalLine && !pos.isCorner,
+          'vertical-line': pos.isVerticalLine  && !pos.isCorner}">
             <div class="left-top"></div>
             <div class="right-top"></div>
             <div class="left-bottom"></div>
             <div class="right-bottom"></div>
           </div>
-
-
-<!--          <div :style="cssColor()" v-if="pos.isNode" class="node-placeholder">-->
-<!--            <div class="top">-->
-<!--              <img src="../assets/arrow.svg" alt="arrow" class="arrow" :class="{hidden: pos.IncomingTop}">-->
-<!--            </div>-->
-<!--            <div class="middle">-->
-<!--              <div class="outgoing-left" >-->
-<!--               <div class='horizontal-line' :class="{hidden: pos.OutgoingLeft}">-->
-<!--                 <div v-for="item in [1,2]" :key="item"></div>-->
-<!--               </div>-->
-<!--              </div>-->
-<!--              <div :class="{node: pos.isNode}"></div>-->
-<!--              <div class='horizontal-line' :class="{hidden: pos.OutgoingRight}">-->
-<!--                <div v-for="item in [1,2]" :key="item"></div>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="bottom">-->
-<!--              <img src="../assets/arrow.svg" alt="arrow" class="arrow" :class="{hidden: pos.IncomingBottom}">-->
-<!--            </div>-->
-<!--          </div>-->
-<!--          <div :class="{'corner': pos.isForwardCorner}" v-if="pos.isCorner && pos.isForwardCorner"></div>-->
-<!--          <div :class="{'revert-corner': !pos.isForwardCorner}" v-if="pos.isCorner && !pos.isForwardCorner"></div>-->
-<!--          <div v-if="pos.isHorizontalLine && !pos.isVerticalLine" :class="{'horizontal-line': pos.isHorizontalLine}"-->
-<!--               class="line">-->
-<!--            <div v-for="item in [1,2]" :key="item"></div>-->
-<!--          </div>-->
-<!--          <div v-if="pos.isVerticalLine && !pos.isHorizontalLine" :class="{'vertical-line': pos.isVerticalLine}"-->
-<!--               class="line">-->
-<!--            <div v-for="item in [1,2]" :key="item"></div>-->
-<!--          </div>-->
-<!--          <div :class="{'cross-line': pos.isVerticalLine && pos.isHorizontalLine}"-->
-<!--               v-if="pos.isVerticalLine && pos.isHorizontalLine">-->
-<!--            <div v-for="item in [1,2,3,4]" :key="item"></div>-->
-<!--          </div>-->
         </td>
       </tr>
     </table>
@@ -83,7 +50,7 @@ const colorGenerator = () => {
   const step = 30;
   const colors = [];
   for (let i = min; i <= max; i += step) colors.push('hsl(' + i + ',70%,50%)');
-  return [...colors.sort(() => Math.random() - 0.5), ...colors.sort(() => Math.random() - 0.5)]
+  return [...colors.sort(() => Math.random() - 0.5), ...colors.sort(() => Math.random() - 0.7)]
 };
 
 const colorsList = colorGenerator();
@@ -124,15 +91,15 @@ const connectNodes = (x, y, isForwardCorner) => {
       rows[i].cells[x].isVerticalLine = true;
     }
 
-    rows[y].cells[y].OutgoingRight = true;
     rows[x].cells[x].IncomingTop = true;
+    rows[y].cells[y].OutgoingRight= true;
   } else {
     for (let i = x + 1; i < y; i++) {
       rows[i].cells[x].isVerticalLine = true;
       rows[y].cells[i].isHorizontalLine = true;
     }
-    rows[y].cells[y].OutgoingLeft = true;
     rows[x].cells[x].IncomingBottom = true;
+    rows[y].cells[y].OutgoingLeft = true;
   }
 };
 
@@ -170,8 +137,8 @@ th {
 }
 
 td {
-  height: 10rem;
-  width: 10rem;
+  height: 5rem;
+  width: 5rem;
 
 }
 
@@ -179,121 +146,152 @@ tr {
   opacity: 0.8;
 }
 
+.node-holder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: repeat(4, 25%);
+  grid-template-rows: repeat(4, 25%);
+  grid-template-areas: "right-top-corner top top left-top-corner"
+  "left node node right"
+  "left node node right"
+  "left-bottom-corner bottom bottom right-bottom-corner";
+  box-sizing: border-box;
+}
+
 .node {
-  height: 2rem;
-  width: 2rem;
-  border: 3px solid var(--bg-color);
+  grid-area: node;
+  height: 100%;
+  width: 100%;
+  border: 5px solid var(--bg-color);
   border-radius: 50%;
   display: inline-block;
   box-sizing: border-box;
 }
 
-/*.node-placeholder {*/
-/*  width: 100%;*/
-/*  height: 100%;*/
-/*  display: flex;*/
-/*  flex-direction: column;*/
-/*}*/
+.right-top-corner {
+  grid-area: right-top-corner;
+}
 
-/*.middle {*/
-/*  display: flex;*/
-/*  flex-direction: row;*/
-/*}*/
+.top, .bottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-/*.middle:first-child, .middle:last-child {*/
-/*  width: 20%;*/
-/*}*/
+.top {
+  grid-area: top;
+}
+.arrow {
+  height: 100%;
+}
+.top .arrow {
+  transform: rotate(180deg);
+}
 
-/*.node-placeholder div:nth-child(2) {*/
-/*  width: 2rem;*/
-/*}*/
+.left-top-corner {
+  grid-area: left-top-corner;
+}
 
-/*.node-placeholder div:first-child, .div:last-child{*/
-/*  flex: 1;*/
-/*}*/
-/*.top .arrow{*/
-/*  transform: rotate(180deg);*/
-/*}*/
-/*.hidden {*/
-/*  visibility: hidden;*/
-/*}*/
+.left {
+  grid-area: left;
+}
 
-/*.cross-line {*/
-/*  height: 100%;*/
-/*  width: 100%;*/
-/*  display: flex;*/
-/*  flex-wrap: wrap;*/
-/*}*/
 
-/*.cross-line div {*/
-/*  width: 50%;*/
-/*  height: 50%;*/
-/*  box-sizing: border-box;*/
-/*}*/
+.right, .left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-/*.cross-line div:first-child {*/
-/*  border-right: black 1px solid;*/
-/*  border-bottom: black 1px solid;*/
-/*}*/
+.right {
+  grid-area: right;
+}
 
-/*.cross-line div:last-child {*/
-/*  border-left: black 1px solid;*/
-/*  border-top: black 1px solid;*/
-/*}*/
+.left-bottom-corner {
+  grid-area: left-bottom-corner;
+}
 
-/*.arrow {*/
-/*  height: auto;*/
-/*  width: auto;*/
-/*}*/
+.bottom {
+  grid-area: bottom;
+}
 
-/*.corner {*/
-/*  width: 50%;*/
-/*  height: 50%;*/
-/*  margin-top: calc(50% - 1px);*/
-/*  box-sizing: border-box;*/
-/*  border-top: black 1px solid;*/
-/*  border-right: black 1px solid;*/
-/*}*/
+.right-bottom-corner {
+  grid-area: right-bottom-corner;
+}
 
-/*.revert-corner {*/
-/*  width: 50%;*/
-/*  height: 50%;*/
-/*  margin-left: 50%;*/
-/*  margin-bottom: 50%;*/
-/*  box-sizing: border-box;*/
-/*  border-left: black 1px solid;*/
-/*  border-bottom: black 1px solid;*/
-/*}*/
+.arc-holder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: repeat(2, 50%);
+  grid-template-rows: repeat(2, 50%);
+  grid-template-areas: "left-top right-top" "left-bottom right-bottom";
+  gap: 0;
+}
 
-/*.line {*/
-/*  height: 100%;*/
-/*  width: 100%;*/
-/*  display: flex;*/
-/*}*/
+.left-top {
+  grid-area: left-top;
+}
 
-/*.vertical-line {*/
-/*  flex-direction: row;*/
-/*  box-sizing: content-box;*/
-/*}*/
+.right-top {
+  grid-area: right-top;
+}
 
-/*.horizontal-line {*/
-/*  flex-direction: column;*/
-/*}*/
+.left-bottom {
+  grid-area: left-bottom;
+}
 
-/*.vertical-line div, .horizontal-line div {*/
-/*  flex: 1;*/
-/*}*/
+.right-bottom {
+  grid-area: right-bottom;
+}
 
-/*.vertical-line div:last-child {*/
-/*  height: 100%;*/
-/*  width: 100%;*/
-/*  border-left: black 1px solid;*/
-/*}*/
+.corner .left-top {
+  border-bottom: 1px black solid;
+}
 
-/*.horizontal-line div:first-child {*/
-/*  height: 100%;*/
-/*  width: 100%;*/
-/*  border-bottom: black 1px solid;*/
-/*}*/
+.corner .left-bottom {
+  border-top: 1px black solid;
+  border-right: 1px black solid;
+}
+
+.corner .right-bottom {
+  border-left: 1px black solid;
+}
+
+
+.revert-corner .left-top {
+  border-right: 1px black solid;
+}
+
+.revert-corner .right-top {
+  border-bottom: 1px black solid;
+  border-left: 1px black solid;
+}
+
+.revert-corner .right-bottom {
+  border-top: 1px black solid;
+}
+
+
+.horizontal-line .left-bottom, .horizontal-line .right-bottom {
+  border-top: 1px black solid;
+}
+
+.horizontal-line .right-top, .horizontal-line .left-top {
+  border-bottom: 1px black solid;
+}
+
+.vertical-line .right-bottom, .vertical-line .right-top {
+  border-left: 1px black solid;
+}
+
+.vertical-line .left-top, .vertical-line .left-bottom {
+  border-right: 1px black solid;
+}
+
+.hidden {
+  visibility: hidden;
+}
 
 </style>
