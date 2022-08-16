@@ -15,8 +15,12 @@
               'diagonal-line': pos.isDiagonalLeftTopOut } "
                    class="line-out">
             </div>
-            <div class="top" :class="{hidden: pos.isInTop  !== true}"><img src="../assets/arrow.svg" alt="arrow"
-                                                                           class="arrow"></div>
+            <div class="top">
+              <img src="../assets/arrow.svg" alt="arrow" class="arrow bottom-node"
+                   :class="{hidden: pos.isInTop  !== true}">
+              <img src="../assets/line.svg" alt="arrow" class="vertical-line-node"
+                   :class="{hidden: pos.isOutTop !== true}">
+            </div>
             <div class="right-top-corner hidden"></div>
             <div class="left" :class="{hidden: pos.isOutLeft !==true}"><img src="../assets/line.svg" alt="arrow"
                                                                             class="line"></div>
@@ -24,9 +28,11 @@
             <div class="right" :class="{hidden: pos.isOutRight !== true}"><img src="../assets/line.svg" alt="arrow"
                                                                                class="line"></div>
             <div class="left-bottom-corner"></div>
-            <div class="bottom" >
-              <img src="../assets/arrow.svg" alt="arrow" class="arrow bottom-node" :class="{hidden: pos.isInBottom !== true}">
-              <img src="../assets/line.svg" alt="arrow" class="vertical-line-node" :class="{hidden: pos.isOutBottom !== true}">
+            <div class="bottom">
+              <img src="../assets/arrow.svg" alt="arrow" class="arrow bottom-node"
+                   :class="{hidden: pos.isInBottom !== true}">
+              <img src="../assets/line.svg" alt="arrow" class="vertical-line-node"
+                   :class="{hidden: pos.isOutBottom !== true}">
             </div>
             <div class="right-bottom-corner">
               <img
@@ -72,9 +78,20 @@ const colorGenerator = () => {
   const step = 30;
   const colors = [];
   for (let i = min; i <= max; i += step) colors.push('hsl(' + i + ',65%,70%)');
-  return [...colors.sort(() => Math.random() - 0.5), ...colors.sort(() => Math.random() - 0.7)]
+  //33 цвета
+  const colors33 = [...colors.sort(() => Math.random() - 0.5),
+    ...colors.sort(() => Math.random() - 0.7),
+    ...colors.sort(() => Math.random() - 0.3)]
+  return [...colors33, ...colors33, ...colors33]
 };
-
+const getColor = () => {
+  let newColor = colorsList.pop();
+  if (newColor === undefined) {
+    colorGenerator();
+    newColor = colorsList.pop();
+  }
+  return newColor;
+};
 const colorsList = colorGenerator();
 const cssColor = () => {
   return {'--random-color': colorsList.pop()}
@@ -93,7 +110,7 @@ const fillMap = () => {
         y: j,
         isNode: isNode,
         isCorner: isCorner,
-        color: colorsList.pop()
+        color: getColor()
       };
 
       if (isCorner) {
@@ -105,21 +122,45 @@ const fillMap = () => {
     rows.push({title: props.data.states[j], cells: newRow})
   }
 };
+
+const getNodeByRow = (rowIndex) => {
+  return rows[rowIndex].cells.find(pos => pos.isNode === true);
+};
+
+const markedLineAsNodeTheNodeConnected = (x, row, node) => {
+  //проверить есть ли массив
+  //если этой ноды еще нет, добавить
+  const node = "x" + node.x + "y" + node.y;
+  if (rows[row].cells[x]?.connectedNodes) {
+    if (!rows[row].cells[x].connectedNodes.includes(node)) {
+      rows[row].cells[x].connectedNodes.push(node);
+    }
+  }
+};
 const connectNodes = (x, y, isForwardCorner) => {
+
   if (isForwardCorner) {
     for (let i = y + 1; i < x; i++) {
       rows[y].cells[i].isHorizontalLine = true;
+      markedLineAsNodeTheNodeConnected(x, y, getNodeByRow(y));
       rows[i].cells[x].isVerticalLine = true;
+      markedLineAsNodeTheNodeConnected(x, i, getNodeByRow(i));
     }
     rows[x].cells[x].isInTop = true;
+    markedLineAsNodeTheNodeConnected(x, x, getNodeByRow(x));
     rows[y].cells[y].isOutRight = true;
+    markedLineAsNodeTheNodeConnected(y, y, getNodeByRow(y));
   } else {
     for (let i = x + 1; i < y; i++) {
       rows[i].cells[x].isVerticalLine = true;
+      markedLineAsNodeTheNodeConnected(x, i, getNodeByRow(i));
       rows[y].cells[i].isHorizontalLine = true;
+      markedLineAsNodeTheNodeConnected(i, y, getNodeByRow(y));
     }
     rows[x].cells[x].isInBottom = true;
+    markedLineAsNodeTheNodeConnected(x, x, getNodeByRow(x));
     rows[y].cells[y].isOutLeft = true;
+    markedLineAsNodeTheNodeConnected(y, y, getNodeByRow(y));
   }
 };
 
@@ -127,7 +168,6 @@ const makeDiagonals = () => {
   for (let i = 0; i < rows.length - 1; i++) {
     const node = rows[i].cells[i];
     const nextNode = rows[i + 1].cells[i + 1];
-    //проверка на угол +1
     if (rows[i].cells[i + 1].isForwardCorner === true) {
       if (!rows[i].cells[i + 1].isVerticalLine) {
         nextNode.isInTop = false;
@@ -140,7 +180,6 @@ const makeDiagonals = () => {
       rows[i].cells[i + 1].isForwardCorner = false;
       rows[i].cells[i + 1].isCorner = false;
     }
-    //проверка на обратный угол +1
     if (!(rows[i + 1].cells[i].isForwardCorner === true) && rows[i + 1].cells[i].isCorner === true) {
       if (!rows[i + 1].cells[i].isVerticalLine) {
         node.isInBottom = false;
@@ -178,10 +217,6 @@ const protectedAreaPoint = {
 
 const getNodeIndexXByRow = (rowIndex) => {
   return rows[rowIndex].cells.find(pos => pos.isNode === true).x;
-};
-
-const getNodeByRow = (rowIndex) => {
-  return rows[rowIndex].cells.find(pos => pos.isNode === true);
 };
 
 const isPossibleToMoveRight = (node) => {
@@ -227,7 +262,7 @@ const movePositionsToRight = (node) => {
 
           if (rows[currentPos.y].cells[currentPos.x]?.isDiagonalLeftTopOut === true) {
             rows[currentPos.y].cells[currentPos.x].isDiagonalLeftTopOut = false;
-            rows[currentPos.y].cells[currentPos.x].outTop = true;
+            rows[currentPos.y].cells[currentPos.x].isOutTop = true;
 
             const prevNodeXIndex = getNodeIndexXByRow(currentPos.y - 1);
             rows[currentPos.y - 1].cells[prevNodeXIndex].isDiagonalRightBottomIn = false;
@@ -347,6 +382,7 @@ tr {
 
 .top {
   grid-area: top;
+  position: relative;
 }
 
 .arrow {
@@ -498,6 +534,7 @@ tr {
   top: 0;
   left: calc(50% - 0.5rem);
 }
+
 .vertical-line-node {
   transform: rotate(90deg);
 }
