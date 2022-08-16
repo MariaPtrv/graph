@@ -1,8 +1,8 @@
 <template>
   <div>
 
-    <table>
-      <tr v-for="(row, serialIndex) in rows" :key="serialIndex" :style="cssColor()">
+    <table :style="cssColor()">
+      <tr v-for="(row, serialIndex) in rows" :key="serialIndex">
         <th>{{ row.title }}</th>
         <td v-for="(pos, posIndex) in row.cells" :key="posIndex">
           <div :class="{'node-holder': pos.isNode}" v-if="pos.isNode">
@@ -24,8 +24,10 @@
             <div class="right" :class="{hidden: pos.isOutRight !== true}"><img src="../assets/line.svg" alt="arrow"
                                                                                class="line"></div>
             <div class="left-bottom-corner"></div>
-            <div class="bottom" :class="{hidden: pos.isInBottom  !== true}"><img src="../assets/arrow.svg"
-                                                                                 alt="arrow" class="arrow"></div>
+            <div class="bottom" >
+              <img src="../assets/arrow.svg" alt="arrow" class="arrow bottom-node" :class="{hidden: pos.isInBottom !== true}">
+              <img src="../assets/line.svg" alt="arrow" class="vertical-line-node" :class="{hidden: pos.isOutBottom !== true}">
+            </div>
             <div class="right-bottom-corner">
               <img
                   src="../assets/arrow-2.svg" alt="arrow"
@@ -75,7 +77,7 @@ const colorGenerator = () => {
 
 const colorsList = colorGenerator();
 const cssColor = () => {
-  return {'--bg-color': colorsList.pop()}
+  return {'--random-color': colorsList.pop()}
 }
 const rows = [];
 const fillMap = () => {
@@ -208,13 +210,10 @@ const movePositionsToRight = (node) => {
 
         if (currentPos.x === rows[currentPos.y].cells.length - 1) {
           rows[currentPos.y].cells.pop();
-          // console.log("removed pos:",  rows[currentPos.y].cells.pop())
         } else {
           rows[currentPos.y].cells[currentPos.x] = JSON.parse(JSON.stringify(rows[currentPos.y].cells[currentPos.x + 1]));
           rows[currentPos.y].cells[currentPos.x].x -= 1;
         }
-        console.log("currentPos", currentPos);
-        console.log("node", node);
 
         if (currentPos.x === node.x - 1 && currentPos.y === node.y) {
           if (rows[currentPos.y].cells[currentPos.x]?.isDiagonalLeftTopIn === true) {
@@ -222,11 +221,8 @@ const movePositionsToRight = (node) => {
             rows[currentPos.y].cells[currentPos.x].isInTop = true;
 
             const prevNodeXIndex = getNodeIndexXByRow(currentPos.y - 1);
-
             rows[currentPos.y - 1].cells[prevNodeXIndex].isDiagonalRightBottomOut = false;
             rows[currentPos.y - 1].cells[prevNodeXIndex].isOutBottom = true;
-
-            console.log("свертка - есть диаг в верх")
           }
 
           if (rows[currentPos.y].cells[currentPos.x]?.isDiagonalLeftTopOut === true) {
@@ -234,14 +230,9 @@ const movePositionsToRight = (node) => {
             rows[currentPos.y].cells[currentPos.x].outTop = true;
 
             const prevNodeXIndex = getNodeIndexXByRow(currentPos.y - 1);
-
             rows[currentPos.y - 1].cells[prevNodeXIndex].isDiagonalRightBottomIn = false;
             rows[currentPos.y - 1].cells[prevNodeXIndex].isInBottom = true;
-
-            console.log("свертка - есть диаг из верх")
           }
-
-
         }
       }
     }
@@ -264,11 +255,8 @@ const processNodesForMoving = () => {
 fillMap();
 fillLines();
 makeDiagonals();
-console.log("перед сверткой:");
-console.log(rows);
-console.log("============================================")
 processNodesForMoving();
-
+console.log(rows)
 </script>
 
 <style scoped>
@@ -281,6 +269,9 @@ processNodesForMoving();
   font-weight: 200;
 }
 
+/*:root {*/
+/*  --background-color: red;*/
+/*}*/
 /*
 grey #e1e2e5
 dark blue #4981fd
@@ -303,7 +294,7 @@ th {
 }
 
 tr:hover th {
-  background: var(--bg-color);
+  background: rgba(0, 0, 0, 0.3);
   transition: ease-in-out 0.4s;
 }
 
@@ -391,6 +382,7 @@ tr {
 
 .bottom {
   grid-area: bottom;
+  position: relative;
 }
 
 .right-bottom-corner {
@@ -500,4 +492,13 @@ tr {
   transform: rotate(45deg);
 }
 
+.bottom-node, .vertical-line-node {
+  height: 1rem;
+  position: absolute;
+  top: 0;
+  left: calc(50% - 0.5rem);
+}
+.vertical-line-node {
+  transform: rotate(90deg);
+}
 </style>
