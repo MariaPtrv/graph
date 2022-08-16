@@ -17,12 +17,17 @@ export default {
 import {ref} from 'vue';
 
 const data = ref({
-  states:['ожидание', 'подача колодок', 'подача гармошки'],
+  states:['ожидание', 'подача колодок', 'подача гармошки', 'выгрузка пассажиров', 'выгрузка багажа', 'уборка самолета','отгон гармошки', 'буксировка на стоянку' ],
   adjacencies:
       [
-        [false, true, true],
-        [false, false, true],
-        [false, true,false]
+        [false, true, true, false, false, false , false, false],
+        [false, false, true, false, false, true, false, false],
+        [false, true, false, true, false, false, false, false],
+        [false, false,true, false, true, false, false, false],
+        [false, false, false, false, false, true, false, false],
+        [false, false, false, false, false, false, true, true],
+        [false, false, false, true, false, false, false, true],
+        [true, false, false, false, false, false, false, false]
       ]
 })
 </script>

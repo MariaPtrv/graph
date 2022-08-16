@@ -13,19 +13,19 @@
                   :class="{hidden: pos.isDiagonalLeftTopIn !== true, 'diagonal-top-incoming-arrow': pos.isDiagonalLeftTopIn === true}">
               <img src="../assets/line.svg" alt="line" :class="{hidden: pos.isDiagonalLeftTopOut !== true ||pos.isDiagonalLeftTopIn === true,
               'diagonal-line': pos.isDiagonalLeftTopOut } "
-                   class="line-outcoming">
+                   class="line-out">
             </div>
             <div class="top" :class="{hidden: pos.isInTop  !== true}"><img src="../assets/arrow.svg" alt="arrow"
-                                                                               class="arrow"></div>
+                                                                           class="arrow"></div>
             <div class="right-top-corner hidden"></div>
             <div class="left" :class="{hidden: pos.isOutLeft !==true}"><img src="../assets/line.svg" alt="arrow"
-                                                                               class="line"></div>
+                                                                            class="line"></div>
             <div class="node"></div>
             <div class="right" :class="{hidden: pos.isOutRight !== true}"><img src="../assets/line.svg" alt="arrow"
-                                                                                  class="line"></div>
+                                                                               class="line"></div>
             <div class="left-bottom-corner"></div>
             <div class="bottom" :class="{hidden: pos.isInBottom  !== true}"><img src="../assets/arrow.svg"
-                                                                                     alt="arrow" class="arrow"></div>
+                                                                                 alt="arrow" class="arrow"></div>
             <div class="right-bottom-corner">
               <img
                   src="../assets/arrow-2.svg" alt="arrow"
@@ -171,7 +171,7 @@ const processedNodesPoint = {
 
 const protectedAreaPoint = {
   x: -2,
-  y: rows.length-1,
+  y: rows.length - 1,
 }
 
 const getNodeIndexXByRow = (rowIndex) => {
@@ -187,46 +187,44 @@ const isPossibleToMoveRight = (node) => {
 };
 
 const markedNodesAsProcessed = () => {
-  processedNodesPoint.x+=1;
-  processedNodesPoint.y+=1
+  processedNodesPoint.x += 1;
+  processedNodesPoint.y += 1
 };
 
 const increaseProtectedArea = () => {
-  protectedAreaPoint.x+=1;
+  protectedAreaPoint.x += 1;
 };
 
 const movePositionsToRight = (node) => {
   for (let i = 0; i < rows.length; i++) {
-    for (let j = 0; j < rows.length; j ++) {
+    for (let j = 0; j < rows[i].cells.length; j++) {
       const currentPos = {
         x: j,
         y: i
       }
       if ((currentPos.x > processedNodesPoint.x
-          || currentPos.y > processedNodesPoint.y)
+              || currentPos.y > processedNodesPoint.y)
           && currentPos.x > protectedAreaPoint.x) {
 
-        if (currentPos.x === rows.length-1) {
-          rows[currentPos.y].cells[currentPos.x] = {};
+        if (currentPos.x === rows[currentPos.y].cells.length - 1) {
           rows[currentPos.y].cells.pop();
           // console.log("removed pos:",  rows[currentPos.y].cells.pop())
-        }
-        else {
-          rows[currentPos.y].cells[currentPos.x] = JSON.parse(JSON.stringify(rows[currentPos.y].cells[currentPos.x+1]));
-          rows[currentPos.y].cells[currentPos.x].x-= 1;
+        } else {
+          rows[currentPos.y].cells[currentPos.x] = JSON.parse(JSON.stringify(rows[currentPos.y].cells[currentPos.x + 1]));
+          rows[currentPos.y].cells[currentPos.x].x -= 1;
         }
         console.log("currentPos", currentPos);
         console.log("node", node);
 
-        if (currentPos.x === node.x-1 && currentPos.y === node.y) {
+        if (currentPos.x === node.x - 1 && currentPos.y === node.y) {
           if (rows[currentPos.y].cells[currentPos.x]?.isDiagonalLeftTopIn === true) {
             rows[currentPos.y].cells[currentPos.x].isDiagonalLeftTopIn = false;
             rows[currentPos.y].cells[currentPos.x].isInTop = true;
 
-            const prevNodeXIndex = getNodeIndexXByRow(currentPos.y-1);
+            const prevNodeXIndex = getNodeIndexXByRow(currentPos.y - 1);
 
-            rows[currentPos.y-1].cells[prevNodeXIndex].isDiagonalRightBottomOut = false;
-            rows[currentPos.y-1].cells[prevNodeXIndex].isOutBottom = true;
+            rows[currentPos.y - 1].cells[prevNodeXIndex].isDiagonalRightBottomOut = false;
+            rows[currentPos.y - 1].cells[prevNodeXIndex].isOutBottom = true;
 
             console.log("свертка - есть диаг в верх")
           }
@@ -235,10 +233,10 @@ const movePositionsToRight = (node) => {
             rows[currentPos.y].cells[currentPos.x].isDiagonalLeftTopOut = false;
             rows[currentPos.y].cells[currentPos.x].outTop = true;
 
-            const prevNodeXIndex = getNodeIndexXByRow(currentPos.y-1);
+            const prevNodeXIndex = getNodeIndexXByRow(currentPos.y - 1);
 
-            rows[currentPos.y-1].cells[prevNodeXIndex].isDiagonalRightBottomIn = false;
-            rows[currentPos.y-1].cells[prevNodeXIndex].isInBottom = true;
+            rows[currentPos.y - 1].cells[prevNodeXIndex].isDiagonalRightBottomIn = false;
+            rows[currentPos.y - 1].cells[prevNodeXIndex].isInBottom = true;
 
             console.log("свертка - есть диаг из верх")
           }
@@ -255,11 +253,11 @@ const processNodesForMoving = () => {
     const currentNode = getNodeByRow(i);
     if (isPossibleToMoveRight(currentNode)) {
       movePositionsToRight(currentNode);
-      console.log("--------------------------")
-      console.log(rows);
+      processedNodesPoint.y += 1;
+    } else {
+      markedNodesAsProcessed();
+      increaseProtectedArea();
     }
-    markedNodesAsProcessed();
-    increaseProtectedArea();
   }
 };
 
@@ -340,7 +338,7 @@ tr {
   grid-area: node;
   height: 100%;
   width: 100%;
-  border: 5px solid var(--bg-color);
+  border: 5px solid red;
   border-radius: 50%;
   display: inline-block;
   box-sizing: border-box;
@@ -491,10 +489,6 @@ tr {
   width: 1rem;
   transform: rotate(180deg);
   z-index: 2;
-}
-
-.diagonal-top-outcoming-line {
-  width: 1rem;
 }
 
 .diagonal-bottom-incoming-arrow {
