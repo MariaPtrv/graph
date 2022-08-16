@@ -141,7 +141,7 @@ const makeDiagonals = () => {
     //проверка на обратный угол +1
     if (!(rows[i + 1].cells[i].isForwardCorner === true) && rows[i + 1].cells[i].isCorner === true) {
       if (!rows[i + 1].cells[i].isVerticalLine) {
-        node.inBottom = false;
+        node.isInBottom = false;
       }
       if (!rows[i + 1].cells[i].isHorizontalLine) {
         nextNode.isOutLeft = false;
