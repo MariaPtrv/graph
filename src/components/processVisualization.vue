@@ -2,29 +2,46 @@
   <div>
 
     <table>
-      <tr v-for="(row, serialIndex) in rows" :key="serialIndex">
+      <tr v-for="(row, serialIndex) in rows" :key="serialIndex" :style="cssColor()">
         <th>{{ row.title }}</th>
         <td v-for="(pos, posIndex) in row.cells" :key="posIndex">
-          <div :class="{'node-holder': pos.isNode}" :style="cssColor()" v-if="pos.isNode">
-            <div class="left-top-corner hidden"></div>
-            <div class="top" :class="{hidden: pos.IncomingTop  !== true}"><img src="../assets/arrow.svg" alt="arrow"
+          <div :class="{'node-holder': pos.isNode}" v-if="pos.isNode">
+            <div class="left-top-corner">
+              <img
+                  src="../assets/arrow-2.svg" alt="arrow"
+                  class="arrow"
+                  :class="{hidden: pos.isDiagonalLeftTopIn !== true, 'diagonal-top-incoming-arrow': pos.isDiagonalLeftTopIn === true}">
+              <img src="../assets/line.svg" alt="line" :class="{hidden: pos.isDiagonalLeftTopOut !== true ||pos.isDiagonalLeftTopIn === true,
+              'diagonal-line': pos.isDiagonalLeftTopOut } "
+                   class="line-outcoming">
+            </div>
+            <div class="top" :class="{hidden: pos.isInTop  !== true}"><img src="../assets/arrow.svg" alt="arrow"
                                                                                class="arrow"></div>
             <div class="right-top-corner hidden"></div>
-            <div class="left" :class="{hidden: pos.OutgoingLeft !==true}"><img src="../assets/line.svg" alt="arrow"
+            <div class="left" :class="{hidden: pos.isOutLeft !==true}"><img src="../assets/line.svg" alt="arrow"
                                                                                class="line"></div>
             <div class="node"></div>
-            <div class="right" :class="{hidden: pos.OutgoingRight !== true}"><img src="../assets/line.svg" alt="arrow"
+            <div class="right" :class="{hidden: pos.isOutRight !== true}"><img src="../assets/line.svg" alt="arrow"
                                                                                   class="line"></div>
             <div class="left-bottom-corner"></div>
-            <div class="bottom" :class="{hidden: pos.IncomingBottom  !== true}"><img src="../assets/arrow.svg"
+            <div class="bottom" :class="{hidden: pos.isInBottom  !== true}"><img src="../assets/arrow.svg"
                                                                                      alt="arrow" class="arrow"></div>
-            <div class="right-bottom-corner"></div>
+            <div class="right-bottom-corner">
+              <img
+                  src="../assets/arrow-2.svg" alt="arrow"
+                  class="arrow"
+                  :class="{hidden: pos.isDiagonalRightBottomIn !== true, 'incoming-right-bottom-corner': pos.isDiagonalRightBottomIn}">
+              <img
+                  src="../assets/line.svg" alt="arrow"
+                  class="line diagonal-line"
+                  :class="{hidden: pos.isDiagonalRightBottomOut !== true || pos.isDiagonalRightBottomIn === true}">
+            </div>
           </div>
 
           <div v-else class="arc-holder" :class="{'corner': pos.isForwardCorner && pos.isCorner,
           'revert-corner': !pos.isForwardCorner && pos.isCorner,
-          'horizontal-line': pos.isHorizontalLine && !pos.isCorner,
-          'vertical-line': pos.isVerticalLine  && !pos.isCorner}">
+          'horizontal-line': pos.isHorizontalLine ,
+          'vertical-line': pos.isVerticalLine }">
             <div class="left-top"></div>
             <div class="right-top"></div>
             <div class="left-bottom"></div>
@@ -52,7 +69,7 @@ const colorGenerator = () => {
   const min = 0;
   const step = 30;
   const colors = [];
-  for (let i = min; i <= max; i += step) colors.push('hsl(' + i + ',70%,50%)');
+  for (let i = min; i <= max; i += step) colors.push('hsl(' + i + ',65%,70%)');
   return [...colors.sort(() => Math.random() - 0.5), ...colors.sort(() => Math.random() - 0.7)]
 };
 
@@ -86,23 +103,54 @@ const fillMap = () => {
     rows.push({title: props.data.states[j], cells: newRow})
   }
 };
-
 const connectNodes = (x, y, isForwardCorner) => {
   if (isForwardCorner) {
     for (let i = y + 1; i < x; i++) {
       rows[y].cells[i].isHorizontalLine = true;
       rows[i].cells[x].isVerticalLine = true;
     }
-
-    rows[x].cells[x].IncomingTop = true;
-    rows[y].cells[y].OutgoingRight = true;
+    rows[x].cells[x].isInTop = true;
+    rows[y].cells[y].isOutRight = true;
   } else {
     for (let i = x + 1; i < y; i++) {
       rows[i].cells[x].isVerticalLine = true;
       rows[y].cells[i].isHorizontalLine = true;
     }
-    rows[x].cells[x].IncomingBottom = true;
-    rows[y].cells[y].OutgoingLeft = true;
+    rows[x].cells[x].isInBottom = true;
+    rows[y].cells[y].isOutLeft = true;
+  }
+};
+
+const makeDiagonals = () => {
+  for (let i = 0; i < rows.length - 1; i++) {
+    const node = rows[i].cells[i];
+    const nextNode = rows[i + 1].cells[i + 1];
+    //проверка на угол +1
+    if (rows[i].cells[i + 1].isForwardCorner === true) {
+      if (!rows[i].cells[i + 1].isVerticalLine) {
+        nextNode.isInTop = false;
+      }
+      if (!rows[i].cells[i + 1].isHorizontalLine) {
+        node.isOutRight = false;
+      }
+      nextNode.isDiagonalLeftTopIn = true;
+      node.isDiagonalRightBottomOut = true;
+      rows[i].cells[i + 1].isForwardCorner = false;
+      rows[i].cells[i + 1].isCorner = false;
+    }
+    //проверка на обратный угол +1
+    if (!(rows[i + 1].cells[i].isForwardCorner === true) && rows[i + 1].cells[i].isCorner === true) {
+      if (!rows[i + 1].cells[i].isVerticalLine) {
+        node.inBottom = false;
+      }
+      if (!rows[i + 1].cells[i].isHorizontalLine) {
+        nextNode.isOutLeft = false;
+      }
+      node.isDiagonalRightBottomIn = true;
+      nextNode.isDiagonalLeftTopOut = true;
+      rows[i + 1].cells[i].isForwardCorner = false;
+      rows[i + 1].cells[i].isCorner = false;
+    }
   }
 };
 
@@ -116,11 +164,124 @@ const fillLines = () => {
   })
 };
 
+const processedNodesPoint = {
+  x: -1,
+  y: -1,
+}
+
+const protectedAreaPoint = {
+  x: -2,
+  y: rows.length-1,
+}
+
+const getNodeIndexXByRow = (rowIndex) => {
+  return rows[rowIndex].cells.find(pos => pos.isNode === true).x;
+};
+
+const getNodeByRow = (rowIndex) => {
+  return rows[rowIndex].cells.find(pos => pos.isNode === true);
+};
+
+const isPossibleToMoveRight = (node) => {
+  return node.x !== 0 && rows[node.y].cells[node.x - 1].isVerticalLine !== true && node.isInTop !== true;
+};
+
+const markedNodesAsProcessed = () => {
+  processedNodesPoint.x+=1;
+  processedNodesPoint.y+=1
+};
+
+const increaseProtectedArea = () => {
+  protectedAreaPoint.x+=1;
+};
+
+const movePositionsToRight = (node) => {
+  for (let i = 0; i < rows.length; i++) {
+    for (let j = 0; j < rows.length; j ++) {
+      const currentPos = {
+        x: j,
+        y: i
+      }
+      if ((currentPos.x > processedNodesPoint.x
+          || currentPos.y > processedNodesPoint.y)
+          && currentPos.x > protectedAreaPoint.x) {
+
+        if (currentPos.x === rows.length-1) {
+          rows[currentPos.y].cells[currentPos.x] = {};
+          rows[currentPos.y].cells.pop();
+          // console.log("removed pos:",  rows[currentPos.y].cells.pop())
+        }
+        else {
+          rows[currentPos.y].cells[currentPos.x] = JSON.parse(JSON.stringify(rows[currentPos.y].cells[currentPos.x+1]));
+          rows[currentPos.y].cells[currentPos.x].x-= 1;
+        }
+        console.log("currentPos", currentPos);
+        console.log("node", node);
+
+        if (currentPos.x === node.x-1 && currentPos.y === node.y) {
+          if (rows[currentPos.y].cells[currentPos.x]?.isDiagonalLeftTopIn === true) {
+            rows[currentPos.y].cells[currentPos.x].isDiagonalLeftTopIn = false;
+            rows[currentPos.y].cells[currentPos.x].isInTop = true;
+
+            const prevNodeXIndex = getNodeIndexXByRow(currentPos.y-1);
+
+            rows[currentPos.y-1].cells[prevNodeXIndex].isDiagonalRightBottomOut = false;
+            rows[currentPos.y-1].cells[prevNodeXIndex].isOutBottom = true;
+
+            console.log("свертка - есть диаг в верх")
+          }
+
+          if (rows[currentPos.y].cells[currentPos.x]?.isDiagonalLeftTopOut === true) {
+            rows[currentPos.y].cells[currentPos.x].isDiagonalLeftTopOut = false;
+            rows[currentPos.y].cells[currentPos.x].outTop = true;
+
+            const prevNodeXIndex = getNodeIndexXByRow(currentPos.y-1);
+
+            rows[currentPos.y-1].cells[prevNodeXIndex].isDiagonalRightBottomIn = false;
+            rows[currentPos.y-1].cells[prevNodeXIndex].isInBottom = true;
+
+            console.log("свертка - есть диаг из верх")
+          }
+
+
+        }
+      }
+    }
+  }
+};
+
+const processNodesForMoving = () => {
+  for (let i = 0; i < rows.length; i++) {
+    const currentNode = getNodeByRow(i);
+    if (isPossibleToMoveRight(currentNode)) {
+      movePositionsToRight(currentNode);
+      console.log("--------------------------")
+      console.log(rows);
+    }
+    markedNodesAsProcessed();
+    increaseProtectedArea();
+  }
+};
+
 fillMap();
 fillLines();
+makeDiagonals();
+console.log("перед сверткой:");
+console.log(rows);
+console.log("============================================")
+processNodesForMoving();
+
 </script>
 
 <style scoped>
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Arial Narrow", sans-serif;
+  font-size: medium;
+  font-weight: 200;
+}
 
 /*
 grey #e1e2e5
@@ -137,20 +298,20 @@ table, th {
 }
 
 th {
-  padding: 0.5rem;
+  padding: 1rem;
   background: #F2F2F2;
   color: rgba(29, 29, 29, 0.99);
-  transition: ease-in-out 0.3s;
+  transition: ease-in-out 0.4s;
 }
 
 tr:hover th {
-  background: rgba(0, 0, 0, 0.1);
-  transition: ease-in-out 0.3s;
+  background: var(--bg-color);
+  transition: ease-in-out 0.4s;
 }
 
 tr:hover {
   background: rgba(0, 0, 0, 0.1);
-  transition: ease-in-out 0.3s;
+  transition: ease-in-out 0.4s;
 }
 
 td {
@@ -159,21 +320,16 @@ td {
 }
 
 tr {
-  transition: ease-in-out 0.3s;
-}
-
-
-.row-positions {
-  flex: 1
+  transition: ease-in-out 0.4s;
 }
 
 .node-holder {
   display: grid;
-  width: 100%;
-  height: 100%;
+  width: 5rem;
+  height: 5rem;
   grid-template-columns: repeat(4, 25%);
   grid-template-rows: repeat(4, 25%);
-  grid-template-areas: "right-top-corner top top left-top-corner"
+  grid-template-areas: "left-top-corner top top right-top-corner"
   "left node node right"
   "left node node right"
   "left-bottom-corner bottom bottom right-bottom-corner";
@@ -241,6 +397,16 @@ tr {
 
 .right-bottom-corner {
   grid-area: right-bottom-corner;
+}
+
+.left-top-corner, .right-top-corner, .left-bottom-corner, .right-bottom-corner {
+  position: relative;
+}
+
+.left-top-corner img, .right-top-corner img, .left-bottom-corner img, .right-bottom-corner img {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .arc-holder {
@@ -315,6 +481,29 @@ tr {
 
 .hidden {
   visibility: hidden;
+}
+
+.incoming-right-bottom-corner {
+
+}
+
+.diagonal-top-incoming-arrow {
+  width: 1rem;
+  transform: rotate(180deg);
+  z-index: 2;
+}
+
+.diagonal-top-outcoming-line {
+  width: 1rem;
+}
+
+.diagonal-bottom-incoming-arrow {
+  width: 1rem;
+  transform: rotate(180deg);
+}
+
+.diagonal-line {
+  transform: rotate(45deg);
 }
 
 </style>
