@@ -24,7 +24,7 @@
             <div class="right-top-corner hidden"></div>
             <div class="left" :class="{hidden: pos.isOutLeft !==true}"><img src="../assets/line.svg" alt="arrow"
                                                                             class="line"></div>
-            <div class="node"></div>
+            <div class="node"><div></div></div>
             <div class="right" :class="{hidden: pos.isOutRight !== true}"><img src="../assets/line.svg" alt="arrow"
                                                                                class="line"></div>
             <div class="left-bottom-corner"></div>
@@ -127,42 +127,60 @@ const getNodeByRow = (rowIndex) => {
   return rows[rowIndex].cells.find(pos => pos.isNode === true);
 };
 
-const markedLineAsNodeTheNodeConnected = (x, row, node) => {
-  //проверить есть ли массив
-  //если этой ноды еще нет, добавить
-  const node = "x" + node.x + "y" + node.y;
-  if (rows[row].cells[x]?.connectedNodes) {
-    if (!rows[row].cells[x].connectedNodes.includes(node)) {
-      rows[row].cells[x].connectedNodes.push(node);
-    }
-  }
-};
+// const markedLineAsNodeTheNodeConnected = (x, row, node) => {
+//   //проверить есть ли массив
+//   //если этой ноды еще нет, добавить
+//   const node = "x" + node.x + "y" + node.y;
+//   if (rows[row].cells[x]?.connectedNodes) {
+//     if (!rows[row].cells[x].connectedNodes.includes(node)) {
+//       rows[row].cells[x].connectedNodes.push(node);
+//     }
+//   }
+// };
 const connectNodes = (x, y, isForwardCorner) => {
-
   if (isForwardCorner) {
     for (let i = y + 1; i < x; i++) {
       rows[y].cells[i].isHorizontalLine = true;
-      markedLineAsNodeTheNodeConnected(x, y, getNodeByRow(y));
       rows[i].cells[x].isVerticalLine = true;
-      markedLineAsNodeTheNodeConnected(x, i, getNodeByRow(i));
     }
     rows[x].cells[x].isInTop = true;
-    markedLineAsNodeTheNodeConnected(x, x, getNodeByRow(x));
     rows[y].cells[y].isOutRight = true;
-    markedLineAsNodeTheNodeConnected(y, y, getNodeByRow(y));
+
   } else {
     for (let i = x + 1; i < y; i++) {
       rows[i].cells[x].isVerticalLine = true;
-      markedLineAsNodeTheNodeConnected(x, i, getNodeByRow(i));
       rows[y].cells[i].isHorizontalLine = true;
-      markedLineAsNodeTheNodeConnected(i, y, getNodeByRow(y));
     }
     rows[x].cells[x].isInBottom = true;
-    markedLineAsNodeTheNodeConnected(x, x, getNodeByRow(x));
     rows[y].cells[y].isOutLeft = true;
-    markedLineAsNodeTheNodeConnected(y, y, getNodeByRow(y));
   }
 };
+
+// const connectNodes = (x, y, isForwardCorner) => {
+//   if (isForwardCorner) {
+//     for (let i = y + 1; i < x; i++) {
+//       rows[y].cells[i].isHorizontalLine = true;
+//       markedLineAsNodeTheNodeConnected(x, y, getNodeByRow(y));
+//       rows[i].cells[x].isVerticalLine = true;
+//       markedLineAsNodeTheNodeConnected(x, i, getNodeByRow(i));
+//     }
+//     rows[x].cells[x].isInTop = true;
+//     markedLineAsNodeTheNodeConnected(x, x, getNodeByRow(x));
+//     rows[y].cells[y].isOutRight = true;
+//     markedLineAsNodeTheNodeConnected(y, y, getNodeByRow(y));
+//   } else {
+//     for (let i = x + 1; i < y; i++) {
+//       rows[i].cells[x].isVerticalLine = true;
+//       markedLineAsNodeTheNodeConnected(x, i, getNodeByRow(i));
+//       rows[y].cells[i].isHorizontalLine = true;
+//       markedLineAsNodeTheNodeConnected(i, y, getNodeByRow(y));
+//     }
+//     rows[x].cells[x].isInBottom = true;
+//     markedLineAsNodeTheNodeConnected(x, x, getNodeByRow(x));
+//     rows[y].cells[y].isOutLeft = true;
+//     markedLineAsNodeTheNodeConnected(y, y, getNodeByRow(y));
+//   }
+// };
 
 const makeDiagonals = () => {
   for (let i = 0; i < rows.length - 1; i++) {
@@ -317,12 +335,12 @@ table {
 }
 
 table, th {
-  border: 0.5px solid lightgrey;
+  border: 0.05rem solid lightgrey;
   border-collapse: collapse;
 }
 
 th {
-  padding: 1rem;
+  padding: 0.5rem;
   background: #F2F2F2;
   color: rgba(29, 29, 29, 0.99);
   transition: ease-in-out 0.4s;
@@ -339,8 +357,8 @@ tr:hover {
 }
 
 td {
-  height: 5rem;
-  width: 5rem;
+  height: 4rem;
+  width: 4rem;
 }
 
 tr {
@@ -349,8 +367,8 @@ tr {
 
 .node-holder {
   display: grid;
-  width: 5rem;
-  height: 5rem;
+  width: 4rem;
+  height: 4rem;
   grid-template-columns: repeat(4, 25%);
   grid-template-rows: repeat(4, 25%);
   grid-template-areas: "left-top-corner top top right-top-corner"
@@ -364,8 +382,18 @@ tr {
   grid-area: node;
   height: 100%;
   width: 100%;
-  border: 5px solid red;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.node div{
+  height: 50%;
+  width: 50%;
+  border: 5px solid #3353e8;
   border-radius: 50%;
+  background: #3353e8;
   display: inline-block;
   box-sizing: border-box;
 }
