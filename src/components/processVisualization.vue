@@ -310,6 +310,7 @@ fillLines();
 makeDiagonals();
 processNodesForMoving();
 console.log(rows)
+
 </script>
 
 <style scoped>
