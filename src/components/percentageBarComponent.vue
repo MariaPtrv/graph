@@ -1,6 +1,6 @@
 <template>
   <div class='layout'>
-    <div class="fill" v-bind:style="{width: computedWidth + '%'}"></div>
+    <div class="fill" :style="{width: computedWidth + '%'}">{{ computedLabel }} {{}}</div>
   </div>
 </template>
 
@@ -14,11 +14,19 @@ export default {
 import {computed, defineProps} from "vue";
 
 const props = defineProps({
-  threshold: String
+  threshold: Number,
+  min: Number,
+  max: Number,
+  unit: String,
+  precision: Number
 });
 
 const computedWidth = computed(() => props.threshold * 100);
-console.log(computedWidth.value)
+const computedLabel = computed(() => {
+  const value = Number((props.max - props.min) * props.threshold).toFixed(props.precision);
+  return `${value} ${props.unit}`;
+});
+
 </script>
 
 <style scoped>
@@ -33,5 +41,8 @@ console.log(computedWidth.value)
   background: green;
   border-radius: 5px 0 0 5px;
   height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
